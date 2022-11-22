@@ -1,0 +1,10 @@
+def mapper_function(input_lines,mapper_id):
+    print(f"This is mapper: {mapper_id}")
+    print(input_lines[0])
+    words = []
+    for line in input_lines:
+        words.extend(line.split(" "))
+    for index,word in enumerate(words):
+        words[index] = (word,1)
+    print(words[:15])
+    
