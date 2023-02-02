@@ -2,14 +2,16 @@
 import multiprocessing
 import os 
 import re
-from typing import List
+from time import sleep
+
 from xmlrpc.server import SimpleXMLRPCServer
 from sys import stderr
-from sqlalchemy import true
+
 #from mapper import *
 import json
 import xmlrpc.client
 import threading
+import sys
 
 
 server = None
@@ -59,40 +61,40 @@ def chunk_slicing(input_lines,no_of_mappers):
     return chunks
 
 def handle_each_mapper(config_filename,address_config,mapper_func,mapper_input,mapper_id,no_of_reducers):
-    mapper_addr = address_config["mapper_"+str(mapper_id)]
-    create_dir_cmd = "ssh "+str(mapper_addr)+" 'mkdir -p mapper_"+str(mapper_id)+"'"
-    args = ["rsync", "./"+mapper_func, str(mapper_addr) + ":" + "mapper_"+str(mapper_id)+"/"+mapper_func]
-    args2 = ["rsync", "./"+config_filename, str(mapper_addr) + ":" + "mapper_"+str(mapper_id)+"/"+config_filename]
-    cmd = " ".join(args)
-    cmd2 = " ".join(args2)
-    os.system(create_dir_cmd)
-    os.system(cmd)
+    mapper_name = "mapper-"+str(mapper_id)
+    cmd1 = f"gcloud compute scp  {config_filename} {mapper_name}:~ --zone=us-west1-c --quiet --ssh-key-file=~/.ssh/{mapper_name}"
+    cmd2 = f"gcloud compute scp  --quiet {mapper_func} {mapper_name}:~ --zone=us-west1-c --ssh-key-file=~/.ssh/{mapper_name}"
+    cmd3 = f"gcloud compute scp --quiet remote_process_starter.sh {mapper_name}:~ --zone=us-west1-c --ssh-key-file=~/.ssh/{mapper_name}"
+    print("transfering configfile")
+    os.system(cmd1)
+    print("transfering mapper file")
     os.system(cmd2)
-    os.system(f"rsync remote_process_starter.sh {str(mapper_addr)}:remote_process_starter.sh")
-    database_server_ip = address_config["database"].split(" ")[0]
-    database_server_port = address_config["database"].split(" ")[1]
+    print("transfering starter file")
+    os.system(cmd3)
+    database_server_ip = address_config["database"].split("\n")[0]
+    database_server_port = address_config["database"].split("\n")[1]
     database_addr = "http://"+database_server_ip+":"+database_server_port
     s = xmlrpc.client.ServerProxy(database_addr)
     status = s.set_mapper_function("mapper_"+str(mapper_id),mapper_input)
-
-    run_mapper_cmd = "ssh "+str(mapper_addr)+" 'bash remote_process_starter.sh mapper_"+str(mapper_id)+"/"+mapper_func+" mapper_"+str(mapper_id)+"/"+config_filename+" "+str(mapper_id)+" "+no_of_reducers+"'"
+    print("running mapper")
+    run_mapper_cmd = f"gcloud compute ssh --ssh-key-file=~/.ssh/{mapper_name}  {mapper_name} --zone us-west1-c --quiet --command='bash remote_process_starter.sh {mapper_func} {config_filename} {mapper_id} {no_of_reducers}'  -- -t"
     os.system(run_mapper_cmd)  
 
 def handle_each_reducer(config_filename,address_config,reducer_func,reducer_id):
-    reducer_addr = address_config["reducer_"+str(reducer_id)]
-    create_dir_cmd = "ssh "+str(reducer_addr)+" 'mkdir -p reducer_"+str(reducer_id)+"'"
-    args = ["rsync", "./"+reducer_func, str(reducer_addr) + ":" + "reducer_"+str(reducer_id)+"/"+reducer_func]
-    args2 = ["rsync", "./"+config_filename, str(reducer_addr) + ":" + "reducer_"+str(reducer_id)+"/"+config_filename]
-    reducer_file_transfer_cmd = " ".join(args)
-    config_file_transfer_cmd = " ".join(args2)
-    os.system(create_dir_cmd)
-    os.system(reducer_file_transfer_cmd)
-    os.system(config_file_transfer_cmd)
-    os.system(f"rsync remote_process_starter.sh {str(reducer_addr)}:remote_process_starter.sh")
-
-    run_reducer_cmd = "ssh "+str(reducer_addr)+" 'bash remote_process_starter.sh reducer_"+str(reducer_id)+"/"+reducer_func+" reducer_"+str(reducer_id)+"/"+config_filename+" "+str(reducer_id)+"'"
-    os.system(run_reducer_cmd)
+    reducer_name = "mapper-"+str(reducer_id)
+    cmd1 = f"gcloud compute scp {config_filename} {reducer_name}:~ --zone=us-west1-c --quiet --ssh-key-file=~/.ssh/{reducer_name}"
+    cmd2 = f"gcloud compute scp --quiet {reducer_func} {reducer_name}:~ --zone=us-west1-c --ssh-key-file=~/.ssh/{reducer_name}"
+    cmd3 = f"gcloud compute scp --quiet remote_process_starter.sh {reducer_name}:~ --zone=us-west1-c --ssh-key-file=~/.ssh/{reducer_name}"
+    os.system(cmd1)
+    os.system(cmd2)
+    os.system(cmd3)
+    print("Please wait this will take few minutes")
+    run_reducer_cmd = f"gcloud compute ssh --ssh-key-file=~/.ssh/{reducer_name} --quiet {reducer_name} --zone us-west1-c --command='bash remote_process_starter.sh {reducer_func} {config_filename} {reducer_id}'"
+    os.system(run_reducer_cmd)  
     
+def create_VM_instance(project_id,instance_name):
+    instance_create_command = f"gcloud compute --project {project_id} instances create {instance_name} --image-family=debian-11 --image-project=debian-cloud --machine-type=e2-medium --zone us-west1-c"
+    os.system(instance_create_command)    
 
 def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,reducer_func,address_config):
     
@@ -102,8 +104,8 @@ def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,red
     fd.close()
 
     master_addr = addr_json['master']
-    master_ip = master_addr.split(" ")[0]
-    master_port = master_addr.split(" ")[1]
+    master_ip = master_addr.split("\n")[0]
+    master_port = master_addr.split("\n")[1]
     master_server_process = threading.Thread(target = init_rpc_master_server,args=(str(master_ip),str(master_port)))
     master_server_process.start()
     #master_server_process.join()
@@ -115,7 +117,7 @@ def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,red
     #print(input_lines)
     chunks = chunk_slicing(input_lines,no_of_mappers)
     #print(f"chunk indices: {chunks}")
-    mapper_processes: List[multiprocessing.Process] =[]
+    mapper_processes = []
     reducer_processes = []
     print("Starting Mappers")
     for i in range(no_of_mappers):
@@ -125,10 +127,9 @@ def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,red
 
     for proc in mapper_processes:
         proc.join()
-        #print(proc.exitcode)
-        if proc.exitcode !=0:
-            proc.start()
-            proc.join()
+        
+        
+            
     print("Bringing barrier down.")
     print("Starting Reducers")    
     for i in range(no_of_reducers):
@@ -139,26 +140,24 @@ def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,red
     for proc in reducer_processes:
         proc.join()
         #print(proc.exitcode)
-        if proc.exitcode !=0:
-            proc.start()
-            proc.join()
+        
     global server
     server.shutdown()
     master_server_process.join()
 
-    for i in range(no_of_mappers):
-        mapper_ip = addr_json["mapper_"+str(i)]
-        os.system("ssh "+mapper_ip+" 'rm -rf "+"mapper_"+str(i)+"'")
+    # for i in range(no_of_mappers):
+    #     mapper_ip = addr_json["mapper_"+str(i)]
+    #     os.system("ssh "+mapper_ip+" 'rm -rf "+"mapper_"+str(i)+"'")
 
-    for i in range(no_of_reducers):
-        reducer_ip = addr_json["reducer_"+str(i)]
-        os.system("ssh "+reducer_ip+" 'rm -rf "+"reducer_"+str(i)+"'")
+    # for i in range(no_of_reducers):
+    #     reducer_ip = addr_json["reducer_"+str(i)]
+    #     os.system("ssh "+reducer_ip+" 'rm -rf "+"reducer_"+str(i)+"'")
 
-    database_server_ip = addr_json["database"].split(" ")[0]
-    database_server_port = addr_json["database"].split(" ")[1]
+    database_server_ip = addr_json["database"].split("\n")[0]
+    database_server_port = addr_json["database"].split("\n")[1]
 
-    os.system("rsync "+database_server_ip+":database/solution_database.json ~")
-    os.system("ssh "+database_server_ip+" 'rm -rf "+"database'")
+    # os.system("rsync "+database_server_ip+":database/solution_database.json ~")
+    # os.system("ssh "+database_server_ip+" 'rm -rf "+"database'")
 
     
     database_addr = "http://"+database_server_ip+":"+database_server_port
@@ -166,6 +165,40 @@ def master_function (input_file_loc,no_of_mappers,no_of_reducers,mapper_func,red
     s.exit_function()
 
     print("Bye Bye.")
+def create_mappers_reducers(project_id,no,instance_type):
+    if instance_type == "mappers":
+        instance_str = "mapper-"
+    else:
+        instance_str = "reducer-"
+    for i in range(no):
+        instance_create_command = f"gcloud compute --project {project_id} instances create {instance_str+str(i)} --image-family=debian-11 --image-project=debian-cloud --machine-type=e2-medium --zone us-west1-c"
+        os.system(instance_create_command)
+
+
+def main():
+    input_info = sys.argv[1]
+    ip_config = sys.argv[2]
+    input_fd = open(input_info,'r')
+    input_json = json.load(input_fd)
+    input_fd.close() 
+
+    project_id = input_json["project_id"]
+    
+    os.system(f"gcloud auth activate-service-account paritosh-service-account@{project_id}.iam.gserviceaccount.com --key-file=key.json --project={project_id}")
+    #no_of_arguments = len(sys.argv)
+    input_file= input_json["input_file_location"]
+    no_of_mappers = input_json["no_of_mappers"]
+    no_of_reducers = input_json["no_of_reducers"]
+    mapper_func = input_json["mapper_file"]
+    reducer_func = input_json["reducer_file"]
+    create_mappers_reducers(project_id,int(no_of_mappers),"mappers")
+    sleep(5)
+    create_mappers_reducers(project_id,int(no_of_reducers),"reducers")
+    sleep(10)
+    master_function(input_file,no_of_mappers,no_of_reducers,mapper_func,reducer_func,ip_config)
+
+if __name__ == "__main__":
+    main()
     
 
     

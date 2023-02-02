@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "paritosh-sabade-fall2022",
+  "private_key_id": "ccb88a3904377c2a03e4133a5129da7ed7882e7b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDOJp9xr5dckyh5\n1TV95g/VMNMAk4HSwLCdvWbyLDPl9TpoP8f0izUfcROoE950dlGi9++4fkdr9E0k\n/Z5dcRnZtW0/F+k156rjyxaJAQd6O6mmJUKRLMEZL1+YuR/9PoOhzvfvdKEILkrM\ntp7JTLL8yS19IRjJm5Xn4qSIP1hSgTLkbBmW7qdkWWIuavoFJdOhJvtfvtdlazUu\ncCCSm7Go7dFVFmdnBEaLS/lIUskUa1ySEQWACPJGtc6k9DnemkCKsw4O8KIsKWIX\nkfzDvM4WPpXCiu6rxQ77JmdoDXF9qkz/BStcFoQF8IpDVT0TtJL4iRtt05Y7ZVMP\nfr+gKimrAgMBAAECggEAARdEB+5gvXhFFVzDEbPiW/bY+jHNoaqsKvy4ZL1GV25h\nLSTZQm2e9FgKCjBz7U3Xx/L9hvTNtlm7ZsZPMwaVym8i8UIhIjKw1s+/6MdJ0Ndf\nLtl+Bq9wviXGbbp2qHjPA+lid0pSTjn6FcDWcKsO1dBpHmmXn5ZKyGImPyPtEoXi\n3qLq30VZtmmDrr+eNATHtDFron3vps620jS/tHAwWYMA6bmJCbVx8t3T8yAHUoct\nVcLxK/IMT2VkXHVJXNIUyWBtqJbZngUCMTM1lvf1SCIMAxOXcaJfZ3C1Tl4KdtN5\ngRD+PX6tg7K5nqbr1AyU/1iIA5TEMoxwvEKsNxgfkQKBgQDmdlLnEn1H/4GHVxzq\nNvZ9L8+627QnxZV4eCkizlT2m+EPlKfr+kSvnpplgJKspLT12sYPkDbWJNB8BCgc\nqiWrHcRA948STzE5kDsG8WRA7uCnMtAQu0XcnubgVCKGZLiZnXj68GWL/CbBl0Wm\nbeRKQVGuqmnXnMQgdwQgygfAjwKBgQDk/qSh/aKMJ7PDBnlaxvaOHwQc2khKrutF\nVXNZA9aJXwWm71gRr2sZf+dN+7vxNg+sl8ofzPbUfyBCy0f3CSp3HhWacHkH/LEj\nD0+WBcL1nMowdqEW6F1cIbOb1rAi2q/oIWboA6s0SpIvl0mykp0FJuGto9VjADBX\nk+Vz5h/bJQKBgQCtqriqXGqAGPCY9nJZpPV2PNNDMlC+L8yFLbeB/Q5Vj/23agRo\ndP3RgalDl/Hvm2aqZiQekkRgdvmMmu1HPIiKPDIp6uOrnnWvtRpmDv3HWLt+A3J7\nSURKDoxYu84QjFH3oI0MPJ+pL2hdNgtMcT85HaPaBZ0g14eMF2PK+bOBzQKBgEYX\nm5Tp6cM0s9VSOfsLQ5Sk8cFTHyWc/O6wBSqN/jD2IOjEAhUHuKSJfedk0lY20f1m\nSLwLJNJORzWqu1BmQdVMJBitrJ5BPocYvKeTA+XiJBFJfm1gmpMEzdE5mZhRj95h\nuvnxhYnv+WcPy8MZFW7qQ9G+gCZZfHKSFn2vRrjxAoGBAK3+xpn3WURSU3LemX8z\nNSOAf6vWWOZqbQ/kTpaS4exWEqWPGjzalJYGT1veKrhljlaa5VYQwvGvx1I3NlFJ\nj06XMgxBPVOLnMn4iJ3GlQh5uUhdkk5aJH0Trra4HnAkhpySPDBiWbaCt0bGeVnf\nIFkNbJiLeNk2s0FR2OEq8ADM\n-----END PRIVATE KEY-----\n",
+  "client_email": "paritosh-service-account@paritosh-sabade-fall2022.iam.gserviceaccount.com",
+  "client_id": "103342111888244633746",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/paritosh-service-account%40paritosh-sabade-fall2022.iam.gserviceaccount.com"
+}

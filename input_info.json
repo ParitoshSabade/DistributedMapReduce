@@ -1,0 +1,9 @@
+{
+    "input_file_location" : "input.txt",
+    "no_of_mappers" : "3",
+    "no_of_reducers" : "3",
+    "mapper_file" : "mapper_inverted_index.py",
+    "reducer_file" : "reducer_inverted_index.py",
+    "project_id" : "paritosh-sabade-fall2022"
+
+}

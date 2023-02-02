@@ -30,16 +30,16 @@ def main():
     addr_json = json.load(fd)
     fd.close() 
 
-    database_server_ip = addr_json["database"].split(" ")[0]
-    database_server_port = addr_json["database"].split(" ")[1]
+    database_server_ip = addr_json["database"].split("\n")[0]
+    database_server_port = addr_json["database"].split("\n")[1]
     database_server_addr = "http://"+database_server_ip+":"+database_server_port
     s = xmlrpc.client.ServerProxy(database_server_addr)
     reducer_input = get_input(s,reducer_id)
     word_count = count_ocurrence(reducer_input)
     add_to_database(s,word_count)
 
-    master_server_ip = addr_json["master"].split(" ")[0]
-    master_server_port = addr_json["master"].split(" ")[1]
+    master_server_ip = addr_json["master"].split("\n")[0]
+    master_server_port = addr_json["master"].split("\n")[1]
     master_server_addr = "http://"+master_server_ip+":"+master_server_port
     master_s = xmlrpc.client.ServerProxy(master_server_addr)
     master_s.give_status("reducer_"+str(reducer_id))
